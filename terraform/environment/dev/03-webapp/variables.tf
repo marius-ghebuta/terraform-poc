@@ -1,11 +1,11 @@
 variable "remote_state_bucket" {
-    default = "noaptea-companiilor-bucket-afj64zihaybwnpc0"
+    default = "terraform-poc-bucket-afj64zihaybwnpc0"
 }
 
 variable "dynamodb_table" {
-    default = "noaptea-companiilor-locks"
+    default = "terraform-poc-locks"
 }
 
 variable "name_prefix" { 
-    default = "noaptea-companiilor"
+    default = "terraform-poc"
 }

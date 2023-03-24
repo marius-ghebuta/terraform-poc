@@ -11,7 +11,7 @@ environment="dev"
 component=$3
 command=$4
 root_dir="terraform/environment/${environment}/${component}"
-name_prefix="noaptea-companiilor"
+name_prefix="terraform-poc"
 
 export TF_VAR_region=$AWS_REGION
 export TF_VAR_remote_state_bucket=$(aws s3api list-buckets --region=$TF_VAR_region |\

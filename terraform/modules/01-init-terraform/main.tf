@@ -1,5 +1,5 @@
 locals { 
-  bucket_name = "noaptea-companiilor-bucket-${random_string.random.result}"
+  bucket_name = "terraform-poc-bucket-${random_string.random.result}"
 
 }
 
@@ -33,7 +33,7 @@ resource "aws_s3_bucket_versioning" "versioning_example" {
 }
 
 resource "aws_dynamodb_table" "terraform_locks" {
-  name         = "noaptea-companiilor-lock"
+  name         = "terraform-poc-lock"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "LockID"
   attribute {

@@ -3,7 +3,7 @@ variable "vpc_cidr" {
 }
 
 variable "name_prefix" { 
-    default = "noaptea-companiilor"
+    default = "terraform-poc"
 }
 
 variable "number_of_subnets" { 
