@@ -27,7 +27,7 @@
             stage('Checkout') {
                 steps {
                     script { 
-                        git branch: 'main', url: 'git@github.com:marius-ghebuta/terraform-poc.git'   
+                        git branch: 'main', url: 'https://github.com/marius-ghebuta/terraform-poc.git'   
                     }
                 }
             }
