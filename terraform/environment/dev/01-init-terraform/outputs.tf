@@ -1,0 +1,7 @@
+output "bucket_name" { 
+    value = module.setup_remote_state.bucket_name
+}
+
+output "dynamodb_table_name" { 
+    value = module.setup_remote_state.dynamodb_table_name
+}

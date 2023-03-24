@@ -1,0 +1,142 @@
+    pipeline {
+
+        agent { label "terraform"} 
+        
+        parameters {
+            string(description: '', name: 'AWS_ACCESS_KEY', defaultValue: 'null')
+            string(description: '', name: 'AWS_SECRET_KEY', defaultValue: 'null')
+            choice(description: '', name: 'ENV', choices: [
+                                                                    'dev',    
+                                                                    'test',
+                                                                    'prod']) 
+            choice(description: '', name: 'TERRAFORM_COMMAND', choices: [
+                                                                    'apply',    
+                                                                    'destroy']) 
+            choice(description: '', name: 'TERRAFORM_MODULE', choices: [
+                                                                    '02-network',    
+                                                                    '03-webapp'])
+            choice(description: '', name: 'INIT_TF_REMOTE_STATE', choices: [
+                                                                    'false',    
+                                                                    'true'])
+            string(description: '', name: 'AWS_REGION', defaultValue: 'eu-central-1')                                                                
+        }
+
+        
+        stages {
+            stage('Checkout') {
+                steps {
+                    script { 
+                        git branch: 'main', url: 'https://github.com/ghebu/noaptea-companiilor22.git'   
+                    }
+                }
+            }
+            stage('Init TF Remote State') { 
+                steps { 
+                    script { 
+                        if (env.INIT_TF_REMOTE_STATE == "true") { 
+                            sh '''
+                            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY}
+                            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
+                            root_dir="terraform/environment/${ENV}/01-init-terraform"
+                            cd $root_dir
+                            terraform init
+                            terraform apply --auto-approve
+                            '''
+                        } else { 
+                            echo "Skipping the initialization phase of Terraform"
+                        }
+                    }
+                }
+            }
+
+            stage('Terraform plan') { 
+                steps { 
+                    sh '''
+                    set -x
+                    export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY}
+                    export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
+
+                    root_dir="terraform/environment/${ENV}/${TERRAFORM_MODULE}"
+                    name_prefix="noaptea-companiilor"
+
+                    export TF_VAR_region=$AWS_REGION
+                    export TF_VAR_remote_state_bucket=$(aws s3api list-buckets --region=$TF_VAR_region |\
+                                                                            jq ' .Buckets[].Name' |\
+                                                                            grep $name_prefix |\
+                                                                            tr -d '"') 
+
+                    export TF_VAR_dynamodb_table=$(aws dynamodb list-tables --region=$TF_VAR_region \
+                                                                            --query "TableNames[]" |\
+                                                                            grep $name_prefix |\
+                                                                            tr -d '"' |\
+                                                                            tr -d " ")
+                    #Output variables
+                    echo "REGION: $TF_VAR_region"
+                    echo "BUCKET: $TF_VAR_remote_state_bucket"
+                    echo "Dynamo: $TF_VAR_dynamodb_table"
+
+                    #Moving into the components directory
+                    cd $root_dir
+                    #Terraform init using backend variables.
+                    terraform init      -backend-config "region=$TF_VAR_region"  \
+                                        -backend-config "bucket=$TF_VAR_remote_state_bucket" \
+                                        -backend-config "dynamodb_table=$TF_VAR_dynamodb_table" \
+                                        -lock=true \
+                                        -reconfigure 
+
+
+
+                    
+                    terraform plan                                          
+
+                    #Going back to the initial directory
+                    cd -       
+                    '''
+                }
+            }
+            stage("approve") {
+                steps {
+                    script {
+                        env.CONFIRMATION = input message: 'User input required', ok: 'Apply',
+                                parameters: [choice(name: 'Apply or Abort', choices: 'Apply\nAbort', description: 'Do you wish to continue?')]
+                    }
+                    echo "The user input was: ${env.CONFIRMATION}"
+                }
+            }
+            stage("Terraform Run") { 
+                steps { 
+                    sh ''' 
+                    set -x
+                    export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY}
+                    export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_KEY}
+
+                    root_dir="terraform/environment/${ENV}/${TERRAFORM_MODULE}"
+                    name_prefix="noaptea-companiilor"
+
+                    export TF_VAR_region=$AWS_REGION
+                    export TF_VAR_remote_state_bucket=$(aws s3api list-buckets --region=$TF_VAR_region |\
+                                                                            jq ' .Buckets[].Name' |\
+                                                                            grep $name_prefix |\
+                                                                            tr -d '"') 
+
+                    export TF_VAR_dynamodb_table=$(aws dynamodb list-tables --region=$TF_VAR_region \
+                                                                            --query "TableNames[]" |\
+                                                                            grep $name_prefix |\
+                                                                            tr -d '"' |\
+                                                                            tr -d " ")
+
+
+                    #Moving into the components directory
+                    cd $root_dir
+
+                    terraform ${TERRAFORM_COMMAND}  --auto-approve                                        
+                    '''
+            }
+        }
+    }       
+    post { 
+        always { 
+            cleanWs()
+        }
+    }
+}
