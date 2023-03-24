@@ -5,6 +5,7 @@
         parameters {
             string(description: '', name: 'AWS_ACCESS_KEY', defaultValue: 'null')
             string(description: '', name: 'AWS_SECRET_KEY', defaultValue: 'null')
+            string(description: '', name: 'AWS_REGION', defaultValue: 'us-east-1')    
             choice(description: '', name: 'ENV', choices: [
                                                                     'dev',    
                                                                     'test',
@@ -18,7 +19,7 @@
             choice(description: '', name: 'INIT_TF_REMOTE_STATE', choices: [
                                                                     'false',    
                                                                     'true'])
-            string(description: '', name: 'AWS_REGION', defaultValue: 'eu-central-1')                                                                
+                                                                        
         }
 
         
