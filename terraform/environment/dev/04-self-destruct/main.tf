@@ -1,6 +1,6 @@
 module "webapp" { 
     source = "../../../modules/03-webapp"
-    name_prefix = "terraform-poc"
+    name_prefix = "terraform-boom"
     network_remote_state_bucket = var.remote_state_bucket
     sg_ingress_rules = [
         {
