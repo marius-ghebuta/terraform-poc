@@ -15,7 +15,8 @@
                                                                     'destroy']) 
             choice(description: '', name: 'TERRAFORM_MODULE', choices: [
                                                                     '02-network',    
-                                                                    '03-webapp'])
+                                                                    '03-webapp',
+                                                                    '04-self-destruct'])
             choice(description: '', name: 'INIT_TF_REMOTE_STATE', choices: [
                                                                     'false',    
                                                                     'true'])
