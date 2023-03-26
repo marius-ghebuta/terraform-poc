@@ -2,7 +2,7 @@ module "webapp" {
     source = "../../../modules/03-webapp"
     name_prefix = "terraform-boom"
     network_remote_state_bucket = var.remote_state_bucket
-    instance_profile_name = ROLE4SSM
+    instance_profile_name = "ROLE4SSM"
     sg_ingress_rules = [
         {
             from_port = 80, to_port = 80, protocol = "tcp", cidr_blocks = ["0.0.0.0/0"]
