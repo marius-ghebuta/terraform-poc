@@ -35,7 +35,7 @@ resource "aws_s3_bucket_versioning" "versioning_example" {
       apply_server_side_encryption_by_default {
         sse_algorithm = "AES256"
  }
-  lifecycle { prevent_destroy = true }
+  
 }
 
 resource "aws_dynamodb_table" "terraform_locks" {
